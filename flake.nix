@@ -1,11 +1,29 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    aicommit = {
+      url = "github:nguyenvanduocit/ai-commit";
+      flake = false;
+    };
+  };
 
-  outputs = { nixpkgs, ... }:
+  outputs = { nixpkgs, aicommit, ... }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
 
       knip = import ./knip { inherit pkgs buildNodeModules; };
+
+      aicommitPkgs = pkgs.buildGoModule {
+        name = "ai-commit";
+        src = aicommit;
+        vendorHash = "sha256-BPxPonschTe8sWc5pATAJuxpn7dgRBeVZQMHUJKpmTk=";
+      };
+
+      checkpoint = pkgs.writeShellApplication {
+        name = "checkpoint";
+        runtimeInputs = [ aicommitPkgs ];
+        text = builtins.readFile ./checkpoint.sh;
+      };
 
       buildNodeModules = {
         fromLockJson = packageJson: lockJson:
@@ -43,16 +61,16 @@
           '';
       };
 
-      packages = {
-        inherit knip;
-      };
+      packages = { inherit knip checkpoint; };
 
     in
 
     {
 
       devShells.x86_64-linux.default = pkgs.mkShellNoCC {
-        buildInputs = [];
+        buildInputs = [
+          checkpoint
+        ];
       };
 
       packages.x86_64-linux = packages;
