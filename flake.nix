@@ -8,7 +8,7 @@
       knip = import ./knip { inherit pkgs buildNodeModules; };
 
       buildNodeModules = {
-        fromLockJson = pkgs: packageJson: lockJson:
+        fromLockJson = packageJson: lockJson:
           let
             locks = pkgs.runCommandNoCC "locks" { } ''
               mkdir -p $out
@@ -27,7 +27,7 @@
             };
 
 
-        fromBunLockb = pkgs: packageJson: lockb:
+        fromBunLockb = packageJson: lockb:
           let
             yarnSrc = pkgs.runCommand "yarn-src" { } ''
               mkdir -p $out
@@ -52,12 +52,10 @@
       # };
 
       packages.x86_64-linux = {
-        inherit knip;
+        inherit knip buildNodeModules;
       };
 
       lib = {
-
-        inherit buildNodeModules;
 
         safeMergeAttrs = builtins.foldl'
           (a: b:
