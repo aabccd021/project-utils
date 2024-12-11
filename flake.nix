@@ -60,6 +60,22 @@
               dontNpmBuild = true;
               installPhase = "mkdir $out && cp -r node_modules/* $out";
             };
+
+
+        fromBunLockb = pkgs: packageJson: lockb:
+          let
+            yarnSrc = pkgs.runCommand "yarn-src" { } ''
+              mkdir -p $out
+              ${pkgs.bun}/bin/bun ${lockb} > $out/yarn.lock
+              ln -s ${packageJson} $out/package.json
+            '';
+            raw = pkgs.mkYarnPackage { src = yarnSrc; name = "node_modules"; };
+            packageName = (builtins.fromJSON (builtins.readFile packageJson)).name;
+          in
+          pkgs.runCommand "node_modules" { } ''
+            mkdir -p $out
+            ln -s ${raw}/libexec/${packageName}/node_modules/* $out
+          '';
       };
 
     };
