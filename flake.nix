@@ -23,7 +23,32 @@
           else
             a // b
         )
-        {};
+        { };
+
+      biomeFormatExtensions = [
+        "*.js"
+        "*.ts"
+        "*.mjs"
+        "*.mts"
+        "*.cjs"
+        "*.cts"
+        "*.jsx"
+        "*.tsx"
+        "*.d.ts"
+        "*.d.cts"
+        "*.d.mts"
+        "*.json"
+        "*.jsonc"
+        "*.css"
+      ];
+
+      imageExtensions = [
+        "*.txt"
+        "*.png"
+        "*.jpg"
+        "*.webp"
+      ];
+
     };
 
   };
