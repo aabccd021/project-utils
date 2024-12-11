@@ -1,6 +1,6 @@
 { pkgs, buildNodeModules }:
 let
-  nodeModules = buildNodeModules.fromLockJson pkgs ./package.json ./package-lock.json;
+  nodeModules = buildNodeModules.fromLockJson ./package.json ./package-lock.json;
 
 in
 pkgs.writeShellScriptBin "knip" ''
