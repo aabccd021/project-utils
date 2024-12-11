@@ -33,7 +33,9 @@ if [ -z "$OPENAI_API_KEY" ]; then
   exit 1
 fi
 
-ai-commit --auto-commit >/dev/null 2>&1 ||
+echo "Start generating commit message..."
+
+timeout 10 ai-commit --auto-commit >/dev/null 2>&1 ||
   git commit --all --message 'checkpoint'
 
 echo "Commit message generated successfully in $(($(date +%s) - start))s"
