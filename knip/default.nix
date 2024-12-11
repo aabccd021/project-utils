@@ -5,7 +5,7 @@ in
 pkgs.runCommandLocal "knip" { } ''
   mkdir -p "$out/bin"
   cp -Lr ${nodeModules} $out/node_modules
-  echo "${pkgs.bun}/bin/bun run $out/node_modules/knip/bin/knip.js" > $out/bin/knip
+  echo "${pkgs.bun}/bin/bun run $out/node_modules/knip/bin/knip.js \"$@\" " > $out/bin/knip
   chmod +x $out/bin/knip
 ''
 
