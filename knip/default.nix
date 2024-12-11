@@ -4,6 +4,6 @@ let
 
 in
 pkgs.writeShellScriptBin "knip" ''
-  ${pkgs.bun}/bin/bun run ${nodeModules}/knip/bin/knip.js
+  ${pkgs.bun}/bin/bun run ${nodeModules}/knip/bin/knip.js "$@"
 ''
 
