@@ -43,6 +43,10 @@
           '';
       };
 
+      packages = {
+        inherit knip;
+      };
+
     in
 
     {
@@ -51,9 +55,9 @@
         buildInputs = [];
       };
 
-      packages.x86_64-linux = {
-        inherit knip buildNodeModules;
-      };
+      packages.x86_64-linux = packages;
+
+      checks.x86_64-linux = packages;
 
       lib = {
 
