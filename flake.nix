@@ -61,6 +61,8 @@
 
       lib = {
 
+        inherit buildNodeModules;
+
         safeMergeAttrs = builtins.foldl'
           (a: b:
             let
