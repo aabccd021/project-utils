@@ -47,9 +47,9 @@
 
     {
 
-      # devShells.x86_64-linux.default = pkgs.mkShellNoCC {
-      #   buildInputs = [ knip ];
-      # };
+      devShells.x86_64-linux.default = pkgs.mkShellNoCC {
+        buildInputs = [];
+      };
 
       packages.x86_64-linux = {
         inherit knip buildNodeModules;
