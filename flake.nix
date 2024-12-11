@@ -1,15 +1,7 @@
 {
   description = "A very basic flake";
 
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  };
-
-  outputs = { self, nixpkgs }: {
-
-    packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-
-    packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
+  outputs = { ... }: {
 
     lib = {
 
@@ -48,6 +40,27 @@
         "*.jpg"
         "*.webp"
       ];
+
+
+      buildNodeModules = {
+        fromLockJson = pkgs: packageJson: lockJson:
+          let
+            locks = pkgs.runCommandNoCC "locks" { } ''
+              mkdir -p $out
+              cp -L ${packageJson} $out/package.json
+              cp -L ${lockJson} $out/package-lock.json
+            '';
+          in
+          pkgs.buildNpmPackage
+            {
+              name = "node_modules";
+              src = locks;
+              npmDeps = pkgs.importNpmLock { npmRoot = locks; };
+              npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+              dontNpmBuild = true;
+              installPhase = "mkdir $out && cp -r node_modules/* $out";
+            };
+      };
 
     };
 
