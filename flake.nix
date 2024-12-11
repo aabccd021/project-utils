@@ -1,46 +1,11 @@
 {
-  description = "A very basic flake";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = { ... }: {
+  outputs = { nixpkgs, ... }:
+    let
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
 
-    lib = {
-
-      safeMergeAttrs = builtins.foldl'
-        (a: b:
-          let
-            intersections = builtins.concatStringsSep " " (builtins.attrNames (builtins.intersectAttrs a b));
-          in
-          if intersections != "" then
-            builtins.abort "Duplicate keys detected: ${intersections}"
-          else
-            a // b
-        )
-        { };
-
-      biomeFormatExtensions = [
-        "*.js"
-        "*.ts"
-        "*.mjs"
-        "*.mts"
-        "*.cjs"
-        "*.cts"
-        "*.jsx"
-        "*.tsx"
-        "*.d.ts"
-        "*.d.cts"
-        "*.d.mts"
-        "*.json"
-        "*.jsonc"
-        "*.css"
-      ];
-
-      imageExtensions = [
-        "*.txt"
-        "*.png"
-        "*.jpg"
-        "*.webp"
-      ];
-
+      knip = import ./knip { inherit pkgs buildNodeModules; };
 
       buildNodeModules = {
         fromLockJson = pkgs: packageJson: lockJson:
@@ -78,7 +43,60 @@
           '';
       };
 
-    };
+    in
 
-  };
+    {
+
+      # devShells.x86_64-linux.default = pkgs.mkShellNoCC {
+      #   buildInputs = [ knip ];
+      # };
+
+      packages.x86_64-linux = {
+        inherit knip;
+      };
+
+      lib = {
+
+        inherit buildNodeModules;
+
+        safeMergeAttrs = builtins.foldl'
+          (a: b:
+            let
+              intersections = builtins.concatStringsSep " " (builtins.attrNames (builtins.intersectAttrs a b));
+            in
+            if intersections != "" then
+              builtins.abort "Duplicate keys detected: ${intersections}"
+            else
+              a // b
+          )
+          { };
+
+        biomeFormatExtensions = [
+          "*.js"
+          "*.ts"
+          "*.mjs"
+          "*.mts"
+          "*.cjs"
+          "*.cts"
+          "*.jsx"
+          "*.tsx"
+          "*.d.ts"
+          "*.d.cts"
+          "*.d.mts"
+          "*.json"
+          "*.jsonc"
+          "*.css"
+        ];
+
+        imageExtensions = [
+          "*.txt"
+          "*.png"
+          "*.jpg"
+          "*.webp"
+        ];
+
+
+      };
+
+    };
 }

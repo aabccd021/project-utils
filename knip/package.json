@@ -1,0 +1,6 @@
+{
+  "name": "knip-module",
+  "dependencies": {
+    "knip": "^5.39.4"
+  }
+}
