@@ -34,16 +34,14 @@
               cp -L ${lockJson} $out/package-lock.json
             '';
           in
-          pkgs.buildNpmPackage
-            {
-              name = "node_modules";
-              src = locks;
-              npmDeps = pkgs.importNpmLock { npmRoot = locks; };
-              npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-              dontNpmBuild = true;
-              installPhase = "mkdir $out && cp -r node_modules/* $out";
-            };
-
+          pkgs.buildNpmPackage {
+            name = "node_modules";
+            src = locks;
+            npmDeps = pkgs.importNpmLock { npmRoot = locks; };
+            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+            dontNpmBuild = true;
+            installPhase = "mkdir $out && cp -r node_modules/* $out";
+          };
 
         fromBunLockb = packageJson: lockb:
           let
@@ -58,6 +56,7 @@
           pkgs.runCommand "node_modules" { } ''
             mkdir -p $out
             ln -s ${raw}/libexec/${packageName}/node_modules/* $out
+            rm -rf $out/${packageName}
           '';
       };
 
