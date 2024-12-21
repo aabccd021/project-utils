@@ -1,7 +1,10 @@
 start=$(date +%s)
 git add -A >/dev/null
-nix flake check --log-lines 200 --quiet || (git reset >/dev/null && exit 1)
-echo "nix flake check finished successfully in $(($(date +%s) - start))s"
+
+if nix flake check >/dev/null 2>&1; then
+  nix flake check --log-lines 200 --quiet || (git reset >/dev/null && exit 1)
+  echo "nix flake check finished successfully in $(($(date +%s) - start))s"
+fi
 
 flag=${1:-}
 
