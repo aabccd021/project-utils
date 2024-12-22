@@ -1,13 +1,14 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
     aicommit = {
       url = "github:nguyenvanduocit/ai-commit";
       flake = false;
     };
   };
 
-  outputs = { nixpkgs, aicommit, ... }:
+  outputs = { nixpkgs, aicommit, treefmt-nix, self }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
 
@@ -60,7 +61,19 @@
           '';
       };
 
-      packages = { inherit knip checkpoint; };
+      packages = {
+        inherit knip checkpoint;
+        formatting = treefmtEval.config.build.check self;
+      };
+
+      treefmtEval = treefmt-nix.lib.evalModule pkgs {
+        projectRootFile = "flake.nix";
+        programs.nixpkgs-fmt.enable = true;
+        programs.prettier.enable = true;
+        programs.shfmt.enable = true;
+        programs.shellcheck.enable = true;
+        settings.formatter.shellcheck.options = [ "-s" "sh" ];
+      };
 
     in
 
@@ -75,6 +88,8 @@
       packages.x86_64-linux = packages;
 
       checks.x86_64-linux = packages;
+
+      formatter.x86_64-linux = treefmtEval.config.build.wrapper;
 
       lib = {
 
@@ -91,23 +106,6 @@
               a // b
           )
           { };
-
-        biomeFormatExtensions = [
-          "*.js"
-          "*.ts"
-          "*.mjs"
-          "*.mts"
-          "*.cjs"
-          "*.cts"
-          "*.jsx"
-          "*.tsx"
-          "*.d.ts"
-          "*.d.cts"
-          "*.d.mts"
-          "*.json"
-          "*.jsonc"
-          "*.css"
-        ];
 
         imageExtensions = [
           "*.txt"
