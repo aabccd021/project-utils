@@ -107,14 +107,6 @@
           )
           { };
 
-        imageExtensions = [
-          "*.txt"
-          "*.png"
-          "*.jpg"
-          "*.webp"
-        ];
-
-
       };
 
     };
