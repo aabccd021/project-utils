@@ -58,6 +58,7 @@ echo "Respository pushed successfully in $(($(date +%s) - start))s"
 start=$(date +%s)
 
 gcroots=$(nix flake show --json | nix run nixpkgs#jq -- --raw-output '.packages["x86_64-linux"] | keys | .[]' | grep '^gcroot-' || true)
+echo "Garbage collecting $(echo "$gcroots" | wc -l) gcroots"
 if [ -n "$gcroots" ]; then
   rm -rf .gcroot
   mkdir -p .gcroot
