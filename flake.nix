@@ -87,9 +87,9 @@
 
       packages.x86_64-linux = packages;
 
-      # checks.x86_64-linux = packages;
+      checks.x86_64-linux = packages;
 
-      # formatter.x86_64-linux = treefmtEval.config.build.wrapper;
+      formatter.x86_64-linux = treefmtEval.config.build.wrapper;
 
       lib = {
 

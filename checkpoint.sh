@@ -1,7 +1,6 @@
 git add -A >/dev/null
 
 has_formatter=$(nix flake show --json | nix run nixpkgs#jq -- '.formatter["x86_64-linux"]' || true)
-echo "Has formatter: $has_formatter"
 if [ -n "$has_formatter" ] && [ "$has_formatter" != "null" ]; then
   start=$(date +%s)
   nix fmt
@@ -10,13 +9,9 @@ fi
 
 git add -A >/dev/null
 
-has_checks=$(nix flake show --json | nix run nixpkgs#jq -- '.checks["x86_64-linux"]' || true)
-echo "Has checks: $has_checks"
-if [ -n "$has_checks" ]; then
-  start=$(date +%s)
-  nix flake check --log-lines 200 --quiet || (git reset >/dev/null && exit 1)
-  echo "'nix flake check' finished successfully in $(($(date +%s) - start))s"
-fi
+start=$(date +%s)
+nix flake check --log-lines 200 --quiet || (git reset >/dev/null && exit 1)
+echo "'nix flake check' finished successfully in $(($(date +%s) - start))s"
 
 flag=${1:-}
 
