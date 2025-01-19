@@ -54,3 +54,16 @@ git pull --quiet --rebase
 git push --quiet
 
 echo "Respository pushed successfully in $(($(date +%s) - start))s"
+
+start=$(date +%s)
+
+gcroots=$(nix flake show --json | nix run nixpkgs#jq -- --raw-output '.packages["x86_64-linux"] | keys | .[]' | grep '^gcroot-' || true)
+if [ -n "$gcroots" ]; then
+  rm -rf .gcroot
+  mkdir -p .gcroot
+  for gcroot in $gcroots; do
+    nix build --out-link ".gcroot/$gcroot" .#"$gcroot"
+  done
+fi
+
+echo "Garbage collection finished successfully in $(($(date +%s) - start))s"
