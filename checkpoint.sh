@@ -28,6 +28,7 @@ checkpoint_fix=$(
     nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"][\"checkpoint-fix\"] | keys | .[]" 2>/dev/null ||
     true
 )
+echo "checkpoint_fix: $checkpoint_fix"
 if [ -n "$checkpoint_fix" ]; then
   start=$(date +%s)
   nix run ".#checkpoint_fix"
