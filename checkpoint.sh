@@ -3,7 +3,11 @@ trap 'cd $(pwd)' EXIT
 cd "$root" || exit
 git add -A >/dev/null
 
-packages=$(nix flake show --json | nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"] | keys | .[]" || true)
+packages=$(
+  nix flake show --json |
+    nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"] | keys | .[]" ||
+    true
+)
 snapshots=$(echo "$packages" | grep '^snapshot-' || true)
 if [ -n "$snapshots" ]; then
   for snapshot in $snapshots; do
@@ -58,12 +62,18 @@ fi
 
 start=$(date +%s)
 
-if [ -z "$OPENAI_API_KEY" ]; then
-  echo "OPENAI_API_KEY is not set"
+openai_api_key=${OPENAI_API_KEY:-}
+if [ -f ./openai_api_key ]; then
+  openai_api_key="$(cat ./openai_api_key)"
+fi
+
+if [ -z "$openai_api_key" ]; then
+  echo "OPENAI_API_KEY environment variable or openai_api_key file is required"
   exit 1
 fi
 
-timeout 10 ai-commit --auto-commit >/dev/null 2>&1 ||
+OPENAI_API_KEY="$openai_api_key" \
+  timeout 10 ai-commit --auto-commit >/dev/null 2>&1 ||
   git commit --all --message 'checkpoint'
 
 echo "Commit message generated successfully in $(($(date +%s) - start))s"
@@ -75,7 +85,14 @@ git push --quiet
 
 echo "Respository pushed successfully in $(($(date +%s) - start))s"
 
-gcroots=$(echo "$packages" | grep '^gcroot-' || true)
+package_gcroots=$(echo "$packages" | grep '^gcroot-' || true)
+nixosConfiguration_gcroots=$(
+  nix flake show --json |
+    nix run nixpkgs#jq -- --raw-output ".nixosConfigurations | keys | .[]" |
+    grep '^gcroot-' ||
+    true
+)
+gcroots="$package_gcroots $nixosConfiguration_gcroots"
 if [ -n "$gcroots" ]; then
   rm -rf .gcroot
   mkdir -p .gcroot
