@@ -67,4 +67,4 @@ if [ -n "$gcroots" ]; then
   done
 fi
 
-echo "Garbage collection finished successfully in $(($(date +%s) - start))s"
+echo "GC roots created successfully in $(($(date +%s) - start))s"
