@@ -1,6 +1,21 @@
+root=$(git rev-parse --show-toplevel)
+trap 'cd $(pwd)' EXIT
+cd "$root" || exit
 git add -A >/dev/null
 
 packages=$(nix flake show --json | nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"] | keys | .[]" || true)
+snapshots=$(echo "$packages" | grep '^snapshots-' || true)
+if [ -n "$snapshots" ]; then
+  for snapshot in $snapshots; do
+    result=$(nix build --no-link --print-out-paths ".#$snapshot")
+    files=$(find -L "$result" -type f -printf '%P\n')
+    for file in $files; do
+      dir=$(dirname "$file")
+      mkdir -p "$dir"
+      cp -r "$result/$file" "$dir"
+    done
+  done
+fi
 
 system=$(nix eval --impure --raw --expr 'builtins.currentSystem')
 has_formatter=$(nix flake show --json | nix run nixpkgs#jq -- ".formatter[\"$system\"]" || true)

@@ -22,7 +22,7 @@
 
       checkpoint = pkgs.writeShellApplication {
         name = "checkpoint";
-        runtimeInputs = [ aicommitPkgs ];
+        runtimeInputs = [ aicommitPkgs pkgs.findutils ];
         text = builtins.readFile ./checkpoint.sh;
       };
 
@@ -64,6 +64,10 @@
       packages = {
         inherit knip checkpoint;
         formatting = treefmtEval.config.build.check self;
+        snapshot-test = pkgs.runCommandNoCCLocal "snapshot-test" { } ''
+          mkdir -p $out/snapshot/nested
+          echo "foo" > $out/snapshot/nested/file.txt
+        '';
       };
 
       gcroot = packages // {
