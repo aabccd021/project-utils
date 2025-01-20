@@ -84,14 +84,13 @@ git pull --quiet --rebase
 git push --quiet
 
 echo "Respository pushed successfully in $(($(date +%s) - start))s"
-
-package_gcroots=$(echo "$packages" | grep '^gcroot-' || true)
-nixosConfiguration_gcroots=$(
+nixosConfigurations=$(
   nix flake show --json |
-    nix run nixpkgs#jq -- --raw-output ".nixosConfigurations | keys | .[]" |
-    grep '^gcroot-' ||
+    nix run nixpkgs#jq -- --raw-output ".nixosConfigurations | keys | .[]" ||
     true
 )
+package_gcroots=$(echo "$packages" | grep '^gcroot-' || true)
+nixosConfiguration_gcroots=$(echo "$nixosConfigurations" | grep '^gcroot-' || true)
 gcroots="$package_gcroots $nixosConfiguration_gcroots"
 if [ -n "$gcroots" ]; then
   rm -rf .gcroot
