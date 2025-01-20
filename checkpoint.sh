@@ -25,14 +25,13 @@ fi
 
 checkpoint_fix=$(
   nix flake show --json |
-    nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"][\"checkpoint-fix\"] | keys | .[]" 2>/dev/null ||
+    nix run nixpkgs#jq -- --raw-output ".apps[\"$system\"][\"checkpoint-fix\"] | keys | .[]" 2>/dev/null ||
     true
 )
-echo "checkpoint_fix: $checkpoint_fix"
 if [ -n "$checkpoint_fix" ]; then
   start=$(date +%s)
-  nix run ".#checkpoint_fix"
-  echo "nix run .#checkpoint_fix finished successfully in $(($(date +%s) - start))s"
+  nix run ".#checkpoint-fix"
+  echo "nix run .#checkpoint-fix finished successfully in $(($(date +%s) - start))s"
 fi
 
 system=$(nix eval --impure --raw --expr 'builtins.currentSystem')
