@@ -86,7 +86,7 @@ git push --quiet
 echo "Respository pushed successfully in $(($(date +%s) - start))s"
 nixosConfigurations=$(
   nix flake show --json |
-    nix run nixpkgs#jq -- --raw-output ".nixosConfigurations | keys | .[]" ||
+    nix run nixpkgs#jq -- --raw-output ".nixosConfigurations | keys | .[]" 2>/dev/null ||
     true
 )
 package_gcroots=$(echo "$packages" | grep '^gcroot-' || true)
