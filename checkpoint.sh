@@ -101,7 +101,13 @@ nixosConfigurations=$(
     true
 )
 package_gcroots=$(echo "$packages" | grep '^gcroot-' || true)
-nixosConfiguration_gcroots=$(echo "$nixosConfigurations" | grep '^gcroot-' || true)
+nixosConfiguration_gcroots=$(
+  echo "$nixosConfigurations" |
+    grep '^gcroot-' |
+    sed 's/^/nixosConfigurations./g' |
+    sed 's/$/.config.system.build.toplevel/g' ||
+    true
+)
 gcroots="$package_gcroots $nixosConfiguration_gcroots"
 if [ -n "$gcroots" ]; then
   rm -rf .gcroot
