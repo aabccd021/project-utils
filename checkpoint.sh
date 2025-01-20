@@ -1,6 +1,7 @@
 git add -A >/dev/null
 
-has_formatter=$(nix flake show --json | nix run nixpkgs#jq -- '.formatter["x86_64-linux"]' || true)
+system=$(nix eval --impure --raw --expr 'builtins.currentSystem')
+has_formatter=$(nix flake show --json | nix run nixpkgs#jq -- ".formatter[\"$system\"]" || true)
 if [ -n "$has_formatter" ] && [ "$has_formatter" != "null" ]; then
   start=$(date +%s)
   nix fmt
@@ -57,7 +58,7 @@ echo "Respository pushed successfully in $(($(date +%s) - start))s"
 
 start=$(date +%s)
 
-gcroots=$(nix flake show --json | nix run nixpkgs#jq -- --raw-output '.packages["x86_64-linux"] | keys | .[]' | grep '^gcroot-' || true)
+gcroots=$(nix flake show --json | nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"] | keys | .[]" | grep '^gcroot-' || true)
 if [ -n "$gcroots" ]; then
   rm -rf .gcroot
   mkdir -p .gcroot
