@@ -2,29 +2,13 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     treefmt-nix.url = "github:numtide/treefmt-nix";
-    aicommit = {
-      url = "github:nguyenvanduocit/ai-commit";
-      flake = false;
-    };
   };
 
-  outputs = { nixpkgs, aicommit, treefmt-nix, self }:
+  outputs = { nixpkgs, treefmt-nix, self }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
 
       knip = import ./knip { inherit pkgs buildNodeModules; };
-
-      aicommitPkgs = pkgs.buildGoModule {
-        name = "ai-commit";
-        src = aicommit;
-        vendorHash = "sha256-BPxPonschTe8sWc5pATAJuxpn7dgRBeVZQMHUJKpmTk=";
-      };
-
-      checkpoint = pkgs.writeShellApplication {
-        name = "checkpoint";
-        runtimeInputs = [ aicommitPkgs pkgs.findutils ];
-        text = builtins.readFile ./checkpoint.sh;
-      };
 
       buildNodeModules = {
         fromLockJson = packageJson: lockJson:
@@ -62,7 +46,7 @@
       };
 
       packages = {
-        inherit knip checkpoint;
+        inherit knip;
         formatting = treefmtEval.config.build.check self;
         snapshot-test = pkgs.runCommandNoCCLocal "snapshot-test" { } ''
           mkdir -p $out/snapshot/nested
@@ -87,30 +71,11 @@
 
     {
 
-      devShells.x86_64-linux.default = pkgs.mkShellNoCC {
-        buildInputs = [
-          checkpoint
-        ];
-      };
-
       packages.x86_64-linux = gcroot;
 
       checks.x86_64-linux = gcroot;
 
       formatter.x86_64-linux = treefmtEval.config.build.wrapper;
-
-      apps.x86_64-linux = {
-        checkpoint-fix = {
-          type = "app";
-          program = toString (
-            pkgs.writeShellScript "checkpoint-fix" ''
-              echo "running checkpoint-fix"
-              sleep 1
-              echo "done checkpoint-fix"
-            ''
-          );
-        };
-      };
 
       lib = {
 
