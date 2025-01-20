@@ -4,16 +4,18 @@ cd "$root" || exit
 git add -A >/dev/null
 
 packages=$(nix flake show --json | nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"] | keys | .[]" || true)
-snapshots=$(echo "$packages" | grep '^snapshots-' || true)
+snapshots=$(echo "$packages" | grep '^snapshot-' || true)
 if [ -n "$snapshots" ]; then
   for snapshot in $snapshots; do
+    start=$(date +%s)
     result=$(nix build --no-link --print-out-paths ".#$snapshot")
     files=$(find -L "$result" -type f -printf '%P\n')
     for file in $files; do
-      dir=$(dirname "$file")
-      mkdir -p "$dir"
-      cp -r "$result/$file" "$dir"
+      mkdir -p "$(dirname "$file")"
+      cp -r "$result/$file" "$file"
+      chmod 644 "$file"
     done
+    echo "$snapshot created successfully in $(($(date +%s) - start))s"
   done
 fi
 
@@ -22,14 +24,14 @@ has_formatter=$(nix flake show --json | nix run nixpkgs#jq -- ".formatter[\"$sys
 if [ -n "$has_formatter" ] && [ "$has_formatter" != "null" ]; then
   start=$(date +%s)
   nix fmt
-  echo "'nix fmt' finished successfully in $(($(date +%s) - start))s"
+  echo "nix fmt finished successfully in $(($(date +%s) - start))s"
 fi
 
 git add -A >/dev/null
 
 start=$(date +%s)
 nix flake check --log-lines 200 --quiet || (git reset >/dev/null && exit 1)
-echo "'nix flake check' finished successfully in $(($(date +%s) - start))s"
+echo "nix flake check finished successfully in $(($(date +%s) - start))s"
 
 flag=${1:-}
 
@@ -73,15 +75,13 @@ git push --quiet
 
 echo "Respository pushed successfully in $(($(date +%s) - start))s"
 
-start=$(date +%s)
-
 gcroots=$(echo "$packages" | grep '^gcroot-' || true)
 if [ -n "$gcroots" ]; then
   rm -rf .gcroot
   mkdir -p .gcroot
   for gcroot in $gcroots; do
+    start=$(date +%s)
     nix build --out-link ".gcroot/$gcroot" .#"$gcroot"
+    echo "GC root $gcroot created successfully in $(($(date +%s) - start))s"
   done
 fi
-
-echo "GC roots created successfully in $(($(date +%s) - start))s"
