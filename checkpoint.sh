@@ -5,7 +5,7 @@ git add -A >/dev/null
 
 packages=$(
   nix flake show --json |
-    nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"] | keys | .[]" ||
+    nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"] | keys | .[]" 2>/dev/null ||
     true
 )
 snapshots=$(echo "$packages" | grep '^snapshot-' || true)
@@ -23,8 +23,19 @@ if [ -n "$snapshots" ]; then
   done
 fi
 
+checkpoint_fix=$(
+  nix flake show --json |
+    nix run nixpkgs#jq -- --raw-output ".packages[\"$system\"][\"checkpoint-fix\"] | keys | .[]" 2>/dev/null ||
+    true
+)
+if [ -n "$checkpoint_fix" ]; then
+  start=$(date +%s)
+  nix run ".#checkpoint_fix"
+  echo "nix run .#checkpoint_fix finished successfully in $(($(date +%s) - start))s"
+fi
+
 system=$(nix eval --impure --raw --expr 'builtins.currentSystem')
-has_formatter=$(nix flake show --json | nix run nixpkgs#jq -- ".formatter[\"$system\"]" || true)
+has_formatter=$(nix flake show --json | nix run nixpkgs#jq -- ".formatter[\"$system\"]" 2>/dev/null || true)
 if [ -n "$has_formatter" ] && [ "$has_formatter" != "null" ]; then
   start=$(date +%s)
   nix fmt
