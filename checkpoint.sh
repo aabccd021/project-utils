@@ -16,7 +16,7 @@ if [ -n "$snapshots" ]; then
     files=$(find -L "$result" -type f -printf '%P\n')
     for file in $files; do
       mkdir -p "$(dirname "$file")"
-      cp -rL "$result/$file" "$file"
+      cp -L "$result/$file" "$file"
       chmod 644 "$file"
     done
     echo "$snapshot created successfully in $(($(date +%s) - start))s"
